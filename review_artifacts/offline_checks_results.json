@@ -1,0 +1,70 @@
+{
+  "mode": "isolated AST execution, synthetic data only; not full application tests",
+  "reproductions": [
+    {
+      "check": "JavaScript accepted as required Java",
+      "observed": true,
+      "reproduced": true
+    },
+    {
+      "check": "Negative skill statement accepted",
+      "observed": true,
+      "reproduced": true
+    },
+    {
+      "check": "One month counted as one year",
+      "observed": 1,
+      "reproduced": true
+    },
+    {
+      "check": "Year-only dates pass 20-year threshold",
+      "observed": 1,
+      "reproduced": true
+    },
+    {
+      "check": "Present date remains fixed at 2025, fails 2-year threshold",
+      "observed": 0,
+      "reproduced": true
+    },
+    {
+      "check": "Missing location scored zero",
+      "observed": 0.0,
+      "reproduced": true
+    },
+    {
+      "check": "Missing salary scored full marks",
+      "observed": 1.0,
+      "reproduced": true
+    },
+    {
+      "check": "Evaluator ignores different job requirements",
+      "observed": true,
+      "reproduced": true
+    },
+    {
+      "check": "Missing age automatically filtered",
+      "observed": 1,
+      "reproduced": true
+    },
+    {
+      "check": "Scoring overwrites greeted state",
+      "observed": "shortlisted",
+      "reproduced": true
+    },
+    {
+      "check": "Score exceeds 100",
+      "observed": true,
+      "reproduced": true,
+      "actual_score": 125
+    },
+    {
+      "check": "30K upper salary passes 25K limit when written in wan",
+      "observed": 1,
+      "reproduced": true
+    }
+  ],
+  "syntax": {
+    "files": 60,
+    "errors": []
+  }
+}

@@ -1,0 +1,213 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    /* 腾讯云企业级开发者社区色彩规范 (Tencent Blue & TDesign Standard) */
+    --tc-brand: #0052d9;
+    --tc-brand-hover: #003cab;
+    --tc-brand-active: #002777;
+    --tc-brand-light: #ecf2fe;
+    --tc-brand-border: #bbd3fb;
+
+    --tc-success: #00a870;
+    --tc-success-light: #e8f8f2;
+    --tc-success-border: #9de8c8;
+
+    --tc-warning: #ed7b2f;
+    --tc-warning-light: #fef3e6;
+    --tc-warning-border: #fcd39c;
+
+    --tc-danger: #e34d59;
+    --tc-danger-light: #feecee;
+    --tc-danger-border: #fca5a5;
+
+    /* 中后台自然文本灰阶与边框规范 */
+    --text-primary: #181818;
+    --text-secondary: #4e5969;
+    --text-muted: #86909c;
+    --text-disabled: #c9cdd4;
+
+    --bg-page: #f5f6f7;
+    --bg-card: #ffffff;
+    --bg-subtle: #f7f8fa;
+    --bg-hover: #f2f3f5;
+
+    --border-color: #e5e6eb;
+    --border-color-subtle: #f0f1f3;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+/* ==========================================================================
+   自然企业级 Web 样式规范 (参考腾讯云开发者社区)
+   ========================================================================== */
+
+/* 消除原 AI 液态玻璃壁纸 */
+.apple-liquid-wallpaper {
+  display: none !important;
+}
+
+/* 1. 经典企业级白底卡片面板 */
+.tangible-glass-panel,
+.tc-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tangible-glass-panel:hover,
+.tc-card:hover {
+  border-color: #c9cdd4;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* 2. 腾讯云风格按钮 */
+.liquid-pill-btn,
+.tc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #dcdfe6;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.liquid-pill-btn:hover,
+.tc-btn:hover {
+  background: #f5f7fa;
+  border-color: #c0c4cc;
+  color: #0052d9;
+}
+
+.liquid-pill-btn:active,
+.tc-btn:active {
+  background: #eef1f6;
+}
+
+/* 品牌主操作按钮 (Tencent Blue) */
+.liquid-pill-primary,
+.tc-btn-primary {
+  background: #0052d9 !important;
+  border-color: #0052d9 !important;
+  color: #ffffff !important;
+}
+
+.liquid-pill-primary:hover,
+.tc-btn-primary:hover {
+  background: #003cab !important;
+  border-color: #003cab !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 82, 217, 0.25);
+}
+
+/* 3. 标签与分段容器 */
+.liquid-glass-tray,
+.tc-nav-tray {
+  background: #f2f3f5;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* 4. 轻量徽标 / 标签 */
+.liquid-glass-chip,
+.tc-tag {
+  background: #f2f3f5;
+  border: 1px solid #e5e6eb;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 5. 候选人头像底座 */
+.liquid-lens-disc,
+.tc-avatar {
+  background: #ecf2fe;
+  border: 1px solid #bbd3fb;
+  border-radius: 4px;
+  color: #0052d9;
+  font-weight: 600;
+}
+
+/* 6. 内嵌浅灰容器 / 代码框 */
+.liquid-glass-well,
+.tc-well {
+  background: #f7f8fa;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+}
+
+/* 7. 表单输入框 */
+.liquid-glass-input,
+.tc-input {
+  background: #ffffff;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.liquid-glass-input:focus,
+.tc-input:focus {
+  border-color: #0052d9;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 82, 217, 0.15);
+}
+
+.liquid-glass-input::placeholder,
+.tc-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* 8. 交互过渡与数据排版 */
+.tactile-btn {
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 自然极简滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f6f7;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9cdd4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #86909c;
+}
