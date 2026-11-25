@@ -97,13 +97,13 @@ test.describe('候选人全景研判与复核决策端到端测试套件 (Slice 
   // ==========================================================================
   test('TC303: 原件流式访问与目录穿越防护', async () => {
     // 1. 获取已完成筛选的真实候选人 (优先查找 status 为 completed 的筛选项或种子候选人)
-    const batchesRes = await fetch('http://127.0.0.1:8000/api/v1/batches?page_size=10')
+    const batchesRes = await fetch('http://127.0.0.1:8001/api/v1/batches?page_size=10')
     const batchesData = await batchesRes.json()
     let testItemId = 'item-1'
 
     for (const b of batchesData.data.items || []) {
       const itemsRes = await fetch(
-        `http://127.0.0.1:8000/api/v1/batches/${b.batch_id}/items`
+        `http://127.0.0.1:8001/api/v1/batches/${b.batch_id}/items`
       )
       const itemsData = await itemsRes.json()
       const completedItem = itemsData.data?.items?.find(
@@ -116,13 +116,13 @@ test.describe('候选人全景研判与复核决策端到端测试套件 (Slice 
     }
 
     // 2. 正常流式获取该 PDF
-    const pdfRes = await fetch(`http://127.0.0.1:8000/api/v1/screening-items/${testItemId}/pdf`)
+    const pdfRes = await fetch(`http://127.0.0.1:8001/api/v1/screening-items/${testItemId}/pdf`)
     expect(pdfRes.status).toBe(200)
     expect(pdfRes.headers.get('content-type')).toContain('application/pdf')
     expect(pdfRes.headers.get('accept-ranges')).toBe('bytes')
 
     // 3. 访问不存在的 item_id 防御
-    const notFoundRes = await fetch('http://127.0.0.1:8000/api/v1/screening-items/item_invalid_xyz/pdf')
+    const notFoundRes = await fetch('http://127.0.0.1:8001/api/v1/screening-items/item_invalid_xyz/pdf')
     expect(notFoundRes.status).toBe(404)
   })
 
@@ -131,11 +131,11 @@ test.describe('候选人全景研判与复核决策端到端测试套件 (Slice 
   // ==========================================================================
   test('TC304: 复核决定修改审计链路 (多次决策修改严格指向上一版 supersedes_id)', async () => {
     // 1. 获取一个测试筛选项
-    const batchesRes = await fetch('http://127.0.0.1:8000/api/v1/batches?page_size=5')
+    const batchesRes = await fetch('http://127.0.0.1:8001/api/v1/batches?page_size=5')
     const batchesData = await batchesRes.json()
     const targetBatch = batchesData.data.items[0]
     const itemsRes = await fetch(
-      `http://127.0.0.1:8000/api/v1/batches/${targetBatch.batch_id}/items`
+      `http://127.0.0.1:8001/api/v1/batches/${targetBatch.batch_id}/items`
     )
     const itemsData = await itemsRes.json()
     const testItem = itemsData.data.items[0]
@@ -143,7 +143,7 @@ test.describe('候选人全景研判与复核决策端到端测试套件 (Slice 
 
     // 2. 首次提交决定：advance
     const decRes1 = await fetch(
-      `http://127.0.0.1:8000/api/v1/screening-items/${testItem.item_id}/decisions`,
+      `http://127.0.0.1:8001/api/v1/screening-items/${testItem.item_id}/decisions`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,7 +160,7 @@ test.describe('候选人全景研判与复核决策端到端测试套件 (Slice 
 
     // 3. 再次提交修改决定：supplement
     const decRes2 = await fetch(
-      `http://127.0.0.1:8000/api/v1/screening-items/${testItem.item_id}/decisions`,
+      `http://127.0.0.1:8001/api/v1/screening-items/${testItem.item_id}/decisions`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,7 +179,7 @@ test.describe('候选人全景研判与复核决策端到端测试套件 (Slice 
 
     // 4. 查看详情中 decisions_history 留痕
     const detailRes = await fetch(
-      `http://127.0.0.1:8000/api/v1/screening-items/${testItem.item_id}`
+      `http://127.0.0.1:8001/api/v1/screening-items/${testItem.item_id}`
     )
     const detailData = (await detailRes.json()).data
     expect(detailData.decisions_history.length).toBeGreaterThanOrEqual(2)

@@ -539,6 +539,28 @@ export const useAppStore = create<AppState>((set, get) => ({
     })
   },
 
+  registerBackendBatch: (batch) => {
+    set((s) => {
+      if (s.batches[batch.id]) return s
+      const nextBatches = {
+        ...s.batches,
+        [batch.id]: {
+          id: batch.id,
+          name: batch.name,
+          jobId: batch.jobId,
+          criteriaVersionId: batch.criteriaVersionId,
+          itemIds: [],
+          createdAt: new Date().toISOString(),
+        },
+      }
+      const next = { ...s, batches: nextBatches }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  },
+
   syncBatchItemsFromBackend: (batchId, backendItems) => {
     set((s) => {
       const nextItems = { ...s.items }
@@ -563,12 +585,18 @@ export const useAppStore = create<AppState>((set, get) => ({
         nextRuns[runId] = {
           id: runId,
           itemId,
+          attempt: 1,
           status: runStatus as any,
-          attemptsCount: 1,
-          parseStage: (bItem.parse_stage as any) || 'text',
-          createdAt: bItem.updated_at,
-          completedAt: bItem.status === 'completed' ? bItem.updated_at : undefined,
-          errorMessage: bItem.error_info?.message,
+          stage: (bItem.parse_stage as any) || 'text',
+          startedAt: bItem.updated_at,
+          updatedAt: bItem.updated_at,
+          error: bItem.error_info
+            ? {
+                code: bItem.error_info.code || 'UNKNOWN_ERROR',
+                message: bItem.error_info.message || '',
+                retryable: bItem.error_info.retryable ?? true,
+              }
+            : null,
         }
 
         if (bItem.status === 'completed') {
@@ -622,8 +650,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           candidateId: candId,
           resumeDocumentId: `doc-${itemId}`,
           currentRunId: runId,
-          currentEvaluationId: bItem.status === 'completed' ? evalId : undefined,
-          createdAt: bItem.updated_at,
+          currentEvaluationId: bItem.status === 'completed' ? evalId : null,
         }
       })
 

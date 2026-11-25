@@ -106,21 +106,18 @@ export const JobsPage: React.FC<JobsPageProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* 头部标题与新建按钮 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-semibold text-[#0052d9]">
               岗位管理 · P01
             </span>
-            <span className="text-xs text-[#86909c]">/</span>
-            <span className="text-xs text-[#86909c]">共 {total} 个岗位</span>
+            <span className="text-xs text-slate-300">/</span>
+            <span className="text-xs text-slate-500">共 {total} 个岗位</span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-[#181818]">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">
             招聘岗位与标准矩阵
           </h1>
-          <p className="text-xs text-[#86909c] mt-1 font-normal">
-            管理所有招聘需求、标准冻结版本与批次筛选入口；标准未确认前受保护禁止导入。
-          </p>
         </div>
 
         <button
@@ -129,15 +126,15 @@ export const JobsPage: React.FC<JobsPageProps> = ({
             setModalError(null)
           }}
           data-testid="btn-open-create-job"
-          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0052d9] hover:bg-[#003cab] text-white text-sm font-medium rounded shadow-xs transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-[#0052d9] hover:bg-[#003cab] text-white text-xs font-medium rounded shadow-xs transition-colors cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           <span>新建岗位</span>
         </button>
       </div>
 
       {/* 搜索与过滤工具栏 */}
-      <div className="bg-white rounded border border-[#e5e6eb] p-3.5 mb-6 flex flex-col md:flex-row items-center justify-between gap-3 shadow-2xs">
+      <div className="bg-white rounded border border-slate-200 p-2.5 mb-5 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
         <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-[#86909c] absolute left-3 top-1/2 -translate-y-1/2" />

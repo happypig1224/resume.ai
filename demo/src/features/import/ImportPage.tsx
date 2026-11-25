@@ -284,16 +284,13 @@ export const ImportPage: React.FC<ImportPageProps> = ({ onGoToWorkbench }) => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="mb-6">
+      <div className="mb-5">
         <span className="text-xs font-semibold text-[#0052d9]">
           批次导入 · P03
         </span>
-        <h1 className="text-xl font-bold tracking-tight text-[#181818] mt-1">
-          导入候选人简历批次
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-1">
+          批次导入
         </h1>
-        <p className="text-xs text-[#86909c] mt-1 max-w-xl font-normal">
-          每批次最多受理 50 份 PDF，导入后自动关联当前已锁定的岗位标准版本快照。
-        </p>
       </div>
 
       {/* 岗位与标准快照信息卡片 */}

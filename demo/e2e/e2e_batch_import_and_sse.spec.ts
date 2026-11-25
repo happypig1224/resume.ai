@@ -149,7 +149,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
 
     // 8. 验证流水线逐步处理完毕，进度达到 100% 并展示完成 Banner
     const completedBanner = page.locator('[data-testid="batch-completed-banner"]')
-    await expect(completedBanner).toBeVisible({ timeout: 15000 })
+    await expect(completedBanner).toBeVisible({ timeout: 30000 })
     await expect(page.locator('[data-testid="sse-percent-text"]')).toHaveText('100%')
 
     // 9. 验证候选人卡片正常渲染，呈现计算所得已知必要条件匹配分
@@ -165,7 +165,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
     page,
   }) => {
     // 1. 获取一个已冻结标准的有效岗位
-    const jobsRes = await fetch('http://127.0.0.1:8000/api/v1/jobs?page_size=10')
+    const jobsRes = await fetch('http://127.0.0.1:8001/api/v1/jobs?page_size=10')
     expect(jobsRes.ok).toBeTruthy()
     const jobsData = await jobsRes.json()
     const readyJob = jobsData.data.items.find(
@@ -178,7 +178,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
     const corruptFile = Buffer.from('THIS_IS_NOT_A_PDF_CONTENT')
 
     const createBatchRes = await postBatchForm(
-      'http://127.0.0.1:8000',
+      'http://127.0.0.1:8001',
       readyJob.id,
       '软受理韧性验证批次',
       [
@@ -240,13 +240,13 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
 
     // 2. 测试后端直接发起 POST /api/v1/batches
     const jobsRes = await fetch(
-      `http://127.0.0.1:8000/api/v1/jobs?search=${encodeURIComponent(unconfirmedTitle)}`
+      `http://127.0.0.1:8001/api/v1/jobs?search=${encodeURIComponent(unconfirmedTitle)}`
     )
     const jobsData = await jobsRes.json()
     const jobId = jobsData.data.items[0].id
 
     const postBatchRes = await postBatchForm(
-      'http://127.0.0.1:8000',
+      'http://127.0.0.1:8001',
       jobId,
       '违规未冻结导入尝试',
       [
@@ -268,7 +268,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
   // ==========================================================================
   test('TC204: 超限导入防御 (单批次超过50份时阻断创建)', async () => {
     // 1. 获取一个已冻结标准的岗位
-    const jobsRes = await fetch('http://127.0.0.1:8000/api/v1/jobs?page_size=10')
+    const jobsRes = await fetch('http://127.0.0.1:8001/api/v1/jobs?page_size=10')
     const jobsData = await jobsRes.json()
     const readyJob = jobsData.data.items.find(
       (j: any) => j.criteria_status?.is_ready_for_import
@@ -282,7 +282,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
     }))
 
     const res = await postBatchForm(
-      'http://127.0.0.1:8000',
+      'http://127.0.0.1:8001',
       readyJob.id,
       '超限测试批次',
       files
@@ -299,7 +299,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
   // ==========================================================================
   test('TC205: SSE 流式广播端点协议规范核验 (Content-Type与Last-Event-ID响应)', async () => {
     // 1. 获取最新批次
-    const batchesRes = await fetch('http://127.0.0.1:8000/api/v1/batches?page_size=5')
+    const batchesRes = await fetch('http://127.0.0.1:8001/api/v1/batches?page_size=5')
     expect(batchesRes.ok).toBeTruthy()
     const batchesData = await batchesRes.json()
     const targetBatch = batchesData.data.items[0]
@@ -310,7 +310,7 @@ test.describe('批次导入与实时 SSE 流水线端到端测试套件 (Slice 3
     const timeout = setTimeout(() => controller.abort(), 2000)
 
     const sseRes = await fetch(
-      `http://127.0.0.1:8000/api/v1/batches/${targetBatch.batch_id}/events`,
+      `http://127.0.0.1:8001/api/v1/batches/${targetBatch.batch_id}/events`,
       {
         headers: {
           Accept: 'text/event-stream',

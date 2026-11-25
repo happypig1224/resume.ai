@@ -63,8 +63,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
 
   const resumeDoc = item ? documents[item.resumeDocumentId] : null
   const docPages = resumeDoc?.contentPages || [
-    '个人基础履历与学历认证：重点高校毕业，具备规范系统的工程实践素养。',
-    '核心系统开发与全栈实战：负责高并发业务架构搭建、组件库封装与端到端系统治理。',
+    backendDetail?.candidate_name
+      ? `候选人【${backendDetail.candidate_name}】简历原件 (${candidate?.originalFilename || 'resume.pdf'}) 已完成文本提取与结构化解析。`
+      : '简历原件已归档至存储系统并完成结构化解析。',
   ]
   const totalPages = docPages.length
 
@@ -235,21 +236,21 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
   return (
     <div
       data-testid="review-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-3 sm:p-5"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-sm p-3 sm:p-5 animate-in fade-in"
     >
-      <div className="w-full max-w-7xl h-[92vh] bg-white rounded border border-[#e5e6eb] flex flex-col overflow-hidden shadow-xl">
-        {/* 顶部标题栏 (自然企业级标准顶栏) */}
-        <div className="h-14 px-5 border-b border-[#e5e6eb] flex items-center justify-between shrink-0 bg-white">
+      <div className="w-full max-w-7xl h-[92vh] bg-white rounded-[20px] border border-slate-200/80 flex flex-col overflow-hidden shadow-soft-lg">
+        {/* 顶部标题栏 (Apple HIG 级精品质感顶栏) */}
+        <div className="h-14 px-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white/90 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-[#ecf2fe] border border-[#bbd3fb] text-[#0052d9] flex items-center justify-center font-bold text-sm">
+            <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-blue-50 to-indigo-50/80 border border-blue-100/70 text-[#0052d9] flex items-center justify-center font-bold text-sm shadow-2xs">
               {candidate.displayName?.slice(0, 1)}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-[#181818] text-sm tracking-tight">
+                <h3 className="font-semibold text-slate-900 text-sm tracking-tight">
                   {candidate.displayName}
                 </h3>
-                <span className="text-xs text-[#86909c]">
+                <span className="text-xs text-slate-400">
                   ({candidate.originalFilename})
                 </span>
                 {allItemEvaluations.length > 1 && (
@@ -266,7 +267,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
             <button
               data-testid="btn-toggle-audit-history"
               onClick={() => setIsAuditHistoryOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#4e5969] bg-white hover:bg-[#f2f3f5] border border-[#dcdcdc] rounded transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-[9px] transition-all cursor-pointer shadow-2xs btn-tactile"
               title="查看人工复核决策变更历史 (supersedes 审计链路)"
             >
               <History className="w-3.5 h-3.5 text-[#0052d9]" />
@@ -278,7 +279,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
               <button
                 data-testid="btn-toggle-version-diff"
                 onClick={() => setIsVersionDiffOpen(true)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#0052d9] bg-[#ecf2fe] hover:bg-[#dbe7fd] border border-[#bbd3fb] rounded transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0052d9] bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/90 rounded-[9px] transition-all cursor-pointer shadow-2xs btn-tactile"
                 title="比对电联补充前后的评估版本得分差异"
               >
                 <GitCompare className="w-3.5 h-3.5 text-[#0052d9]" />
@@ -288,7 +289,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
 
             <button
               onClick={handleOpenSupplement}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0052d9] bg-white hover:bg-[#ecf2fe] border border-[#0052d9] rounded transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0052d9] bg-white hover:bg-blue-50/70 border border-blue-200/90 rounded-[9px] transition-all cursor-pointer shadow-2xs btn-tactile"
             >
               <PlusCircle className="w-3.5 h-3.5 text-[#0052d9]" />
               <span>补充材料并重评</span>
@@ -297,7 +298,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
             <button
               onClick={onClose}
               data-testid="btn-close-review"
-              className="w-8 h-8 rounded text-[#86909c] hover:text-[#181818] hover:bg-[#f2f3f5] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-[9px] text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
               title="关闭"
             >
               <X className="w-4 h-4" />
@@ -345,8 +346,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
                   </p>
                 </div>
                 {activeEvidenceId && evidences[activeEvidenceId]?.page === previewPage && (
-                  <span className="text-[11px] font-medium text-[#ed7b2f] bg-[#fef3e6] border border-[#fcd39c] px-2 py-0.5 rounded">
-                    🎯 已锁定证据引用 (P.{previewPage})
+                  <span className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                    已锁定证据引用 (P.{previewPage})
                   </span>
                 )}
               </div>
@@ -355,16 +356,16 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
                 <div
                   className={`p-4 rounded transition-all text-xs whitespace-pre-wrap font-sans leading-relaxed ${
                     activeEvidenceId && evidences[activeEvidenceId]?.page === previewPage
-                      ? 'bg-[#fef3e6] border-l-4 border-[#ed7b2f] text-[#181818] shadow-xs'
-                      : 'bg-[#f7f8fa] text-[#4e5969] border border-[#e5e6eb]'
+                      ? 'bg-amber-50/60 border-l-4 border-amber-500 text-slate-900 shadow-xs'
+                      : 'bg-slate-50 text-slate-700 border border-slate-200'
                   }`}
                 >
                   {docPages[previewPage - 1] || '（本页无更多文本内容）'}
                 </div>
 
                 {activeEvidenceId && evidences[activeEvidenceId]?.page === previewPage && (
-                  <div className="p-2.5 rounded bg-amber-50/70 border border-amber-200/60 text-amber-900 text-[11px]">
-                    <span className="font-semibold block mb-0.5">📌 证据定位引文核验：</span>
+                  <div className="p-2.5 rounded bg-slate-50 border border-slate-200 text-slate-800 text-[11px]">
+                    <span className="font-semibold block mb-0.5 text-slate-600">引文依据：</span>
                     <span className="font-mono">“{evidences[activeEvidenceId]?.quote}”</span>
                   </div>
                 )}
@@ -541,28 +542,28 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
               </div>
             </div>
 
-            {/* 人工复核决策表单 */}
-            <div className="p-4 rounded bg-[#f7f8fa] border border-[#e5e6eb] flex flex-col gap-3.5">
-              <div className="flex items-center justify-between pb-2.5 border-b border-[#e5e6eb]">
-                <h4 className="font-semibold text-xs text-[#181818]">
+            {/* 人工复核决策表单 (Apple HIG 级触控与层级卡片) */}
+            <div className="p-4 rounded-[14px] bg-slate-50/80 border border-slate-200/70 flex flex-col gap-3.5 shadow-2xs">
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/60">
+                <h4 className="font-semibold text-xs text-slate-900">
                   HR 人工复核决定与处置
                 </h4>
                 {saveSuccessMsg && (
-                  <span className="text-xs text-[#00a870] font-medium flex items-center gap-1">
+                  <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>复核决定已持久保存！</span>
                   </span>
                 )}
               </div>
 
-              {/* 三大决定切换 */}
+              {/* 三大决定切换 (触感药丸分段选择) */}
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setSelectedOutcome('advance')}
-                  className={`py-2 px-3 rounded text-xs font-medium transition-colors cursor-pointer border ${
+                  className={`py-2 px-3 rounded-[9px] text-xs font-medium transition-all cursor-pointer border shadow-2xs btn-tactile ${
                     selectedOutcome === 'advance'
-                      ? 'bg-[#0052d9] text-white border-[#0052d9]'
-                      : 'bg-white text-[#4e5969] border-[#dcdfe6] hover:bg-[#f2f3f5]'
+                      ? 'bg-[#0052d9] text-white border-[#0052d9] shadow-soft-xs font-semibold'
+                      : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50'
                   }`}
                 >
                   推进沟通
@@ -570,10 +571,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
 
                 <button
                   onClick={() => setSelectedOutcome('need_info')}
-                  className={`py-2 px-3 rounded text-xs font-medium transition-colors cursor-pointer border ${
+                  className={`py-2 px-3 rounded-[9px] text-xs font-medium transition-all cursor-pointer border shadow-2xs btn-tactile ${
                     selectedOutcome === 'need_info'
-                      ? 'bg-[#ed7b2f] text-white border-[#ed7b2f]'
-                      : 'bg-white text-[#4e5969] border-[#dcdfe6] hover:bg-[#f2f3f5]'
+                      ? 'bg-amber-600 text-white border-amber-600 shadow-soft-xs font-semibold'
+                      : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50'
                   }`}
                 >
                   待补充信息
@@ -581,10 +582,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
 
                 <button
                   onClick={() => setSelectedOutcome('hold')}
-                  className={`py-2 px-3 rounded text-xs font-medium transition-colors cursor-pointer border ${
+                  className={`py-2 px-3 rounded-[9px] text-xs font-medium transition-all cursor-pointer border shadow-2xs btn-tactile ${
                     selectedOutcome === 'hold'
-                      ? 'bg-[#e34d59] text-white border-[#e34d59]'
-                      : 'bg-white text-[#4e5969] border-[#dcdfe6] hover:bg-[#f2f3f5]'
+                      ? 'bg-rose-600 text-white border-rose-600 shadow-soft-xs font-semibold'
+                      : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50'
                   }`}
                 >
                   暂不推进
@@ -593,7 +594,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
 
               {/* 快捷原因标签 */}
               <div>
-                <span className="text-[11px] text-[#86909c] block mb-1.5 font-normal">
+                <span className="text-[11px] text-slate-400 block mb-1.5 font-normal">
                   快捷原因标签（可多选）
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -603,10 +604,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
                       <button
                         key={tag}
                         onClick={() => handleToggleTag(tag)}
-                        className={`text-[11px] px-2.5 py-1 rounded transition-colors cursor-pointer border ${
+                        className={`text-[11px] px-2.5 py-1 rounded-[7px] transition-all cursor-pointer border shadow-2xs btn-tactile ${
                           isSelected
-                            ? 'bg-[#ecf2fe] text-[#0052d9] border-[#bbd3fb] font-medium'
-                            : 'bg-white text-[#4e5969] border-[#dcdfe6] hover:border-[#0052d9]'
+                            ? 'bg-blue-50 text-[#0052d9] border-blue-200 font-medium'
+                            : 'bg-white text-slate-600 border-slate-200/80 hover:border-slate-300'
                         }`}
                       >
                         {tag}
@@ -618,7 +619,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
 
               {/* 备注说明 */}
               <div>
-                <span className="text-[11px] text-[#86909c] block mb-1 font-normal">
+                <span className="text-[11px] text-slate-400 block mb-1 font-normal">
                   复核备注说明（选填）
                 </span>
                 <textarea
@@ -626,7 +627,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
                   onChange={(e) => setNote(e.target.value)}
                   rows={2}
                   placeholder="记录技术面试关注重点或核实结论..."
-                  className="w-full text-xs p-2.5 rounded bg-white border border-[#dcdfe6] focus:border-[#0052d9] outline-none text-[#181818] resize-none"
+                  className="w-full text-xs p-2.5 rounded-[9px] bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-slate-900 resize-none transition-all shadow-2xs"
                 />
               </div>
 
@@ -634,7 +635,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({ item
                 <button
                   disabled={isSavingDecision}
                   onClick={handleSaveDecision}
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded text-xs font-medium text-white bg-[#0052d9] hover:bg-[#003cab] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[9px] text-xs font-medium text-white bg-[#0052d9] hover:bg-[#003cab] transition-all cursor-pointer shadow-soft-xs btn-tactile"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-200" />
                   <span>{isSavingDecision ? '正在保存...' : '保存人工复核决定'}</span>

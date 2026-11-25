@@ -19,27 +19,27 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
   ...rest
 }) => {
-  // 遵循腾讯云及企业级中后台 Tag 规范
+  // 基于 Apple HIG 与 Linear 现代视觉标准：微光果冻药丸胶囊
   const variantStyles: Record<BadgeVariant, string> = {
-    primary: 'bg-[#ecf2fe] text-[#0052d9] border-[#bbd3fb]',
-    success: 'bg-[#e8f8f2] text-[#00a870] border-[#9de8c8]',
-    warning: 'bg-[#fef3e6] text-[#ed7b2f] border-[#fcd39c]',
-    danger: 'bg-[#feecee] text-[#e34d59] border-[#fca5a5]',
-    neutral: 'bg-[#f2f3f5] text-[#4e5969] border-[#e5e6eb]',
+    primary: 'bg-[#0052d9]/8 text-[#0052d9] border-[#0052d9]/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]',
+    success: 'bg-[#00a870]/9 text-[#00885a] border-[#00a870]/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]',
+    warning: 'bg-[#ed7b2f]/9 text-[#c85f19] border-[#ed7b2f]/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]',
+    danger: 'bg-[#e34d59]/9 text-[#c73440] border-[#e34d59]/25 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]',
+    neutral: 'bg-slate-100/80 text-slate-600 border-slate-200/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]',
   }
 
   const sizeStyles: Record<BadgeSize, string> = {
-    sm: 'text-[11px] px-2 py-0.5 gap-1',
-    md: 'text-xs px-2.5 py-0.5 gap-1.5',
+    sm: 'text-[11px] px-2.5 py-0.5 gap-1 font-medium',
+    md: 'text-xs px-3 py-0.5 gap-1.5 font-medium',
   }
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded border ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center rounded-full border ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...rest}
     >
       {icon && <span className="shrink-0">{icon}</span>}
-      <span className="leading-tight">{children}</span>
+      <span className="leading-normal tracking-tight">{children}</span>
     </span>
   )
 }

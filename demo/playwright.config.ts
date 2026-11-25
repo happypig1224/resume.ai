@@ -21,8 +21,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'powershell -Command "cd ../backend; .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000"',
-      port: 8000,
+      command: 'powershell -Command "cd ../backend; .\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8001"',
+      port: 8001,
       reuseExistingServer: true,
       timeout: 120000,
     },

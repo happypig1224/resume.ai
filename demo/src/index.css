@@ -4,99 +4,110 @@
 
 @layer base {
   :root {
-    /* 腾讯云企业级开发者社区色彩规范 (Tencent Blue & TDesign Standard) */
-    --tc-brand: #0052d9;
-    --tc-brand-hover: #003cab;
-    --tc-brand-active: #002777;
-    --tc-brand-light: #ecf2fe;
-    --tc-brand-border: #bbd3fb;
+    /* 现代企业级 Apple / Linear 顶级色彩空间与视觉 Tokens */
+    --brand-primary: #0052d9;
+    --brand-primary-hover: #003cab;
+    --brand-primary-subtle: #f0f5ff;
+    --brand-primary-border: #bbd3fb;
 
-    --tc-success: #00a870;
-    --tc-success-light: #e8f8f2;
-    --tc-success-border: #9de8c8;
+    --status-success: #00a870;
+    --status-success-subtle: #e8f8f2;
+    --status-success-border: #a3e5c9;
 
-    --tc-warning: #ed7b2f;
-    --tc-warning-light: #fef3e6;
-    --tc-warning-border: #fcd39c;
+    --status-warning: #ed7b2f;
+    --status-warning-subtle: #fef3e6;
+    --status-warning-border: #fcd39c;
 
-    --tc-danger: #e34d59;
-    --tc-danger-light: #feecee;
-    --tc-danger-border: #fca5a5;
+    --status-danger: #e34d59;
+    --status-danger-subtle: #feecee;
+    --status-danger-border: #fca5a5;
 
-    /* 中后台自然文本灰阶与边框规范 */
-    --text-primary: #181818;
-    --text-secondary: #4e5969;
-    --text-muted: #86909c;
-    --text-disabled: #c9cdd4;
+    /* 苹果级高精自然灰阶与表面色 */
+    --text-primary: #1c1c1e;
+    --text-secondary: #48484a;
+    --text-muted: #8e8e93;
+    --text-disabled: #c7c7cc;
 
-    --bg-page: #f5f6f7;
+    --bg-page: #f8f9fa;
     --bg-card: #ffffff;
-    --bg-subtle: #f7f8fa;
-    --bg-hover: #f2f3f5;
+    --bg-subtle: #f4f5f7;
+    --bg-hover: #f0f2f5;
 
-    --border-color: #e5e6eb;
-    --border-color-subtle: #f0f1f3;
+    --border-subtle: #ebecee;
+    --border-medium: #dcdfe4;
+    --border-strong: #c4c7cf;
+
+    /* 物理漫反射微环境光阴影 */
+    --shadow-soft-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+    --shadow-soft-sm: 0 2px 6px -1px rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+    --shadow-soft-md: 0 4px 14px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    --shadow-soft-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.07), 0 4px 8px -2px rgba(0, 0, 0, 0.02);
   }
 
   body {
     background-color: var(--bg-page);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     overflow-x: hidden;
   }
 }
 
 /* ==========================================================================
-   自然企业级 Web 样式规范 (参考腾讯云开发者社区)
+   去 AI 味 · 工匠级组件微交互与物理触感规范
    ========================================================================== */
 
-/* 消除原 AI 液态玻璃壁纸 */
-.apple-liquid-wallpaper {
-  display: none !important;
-}
-
-/* 1. 经典企业级白底卡片面板 */
-.tangible-glass-panel,
-.tc-card {
+/* 1. 高级微光温润卡片容器 */
+.apple-card {
   background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft-sm);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
 }
 
-.tangible-glass-panel:hover,
-.tc-card:hover {
-  border-color: #c9cdd4;
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05);
+.apple-card:hover {
+  border-color: rgba(0, 82, 217, 0.3);
+  box-shadow: var(--shadow-soft-md);
 }
 
-/* 2. 腾讯云风格按钮 */
-.liquid-pill-btn,
-.tc-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 4px;
+/* 2. 物理弹性微按压态 (Tactile Depress) */
+.btn-tactile {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.btn-tactile:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* 3. 苹果级毛玻璃通透层叠 */
+.liquid-glass-nav {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(229, 230, 235, 0.7);
+}
+
+/* 4. 分段控件精细底托 */
+.segmented-control {
+  background: #f1f2f4;
+  padding: 3px;
+  border-radius: 12px;
+}
+
+.segmented-item-active {
   background: #ffffff;
-  border: 1px solid #dcdfe6;
   color: var(--text-primary);
-  font-weight: 500;
-  font-size: 13px;
-  line-height: 1.5;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.liquid-pill-btn:hover,
-.tc-btn:hover {
-  background: #f5f7fa;
-  border-color: #c0c4cc;
-  color: #0052d9;
+  font-weight: 600;
+  border-radius: 9px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 1px rgba(0, 0, 0, 0.03);
 }
 
 .liquid-pill-btn:active,

@@ -302,13 +302,10 @@ export const CriteriaPage: React.FC<CriteriaPageProps> = ({ onGoToImport }) => {
           </div>
           <h1
             data-testid="criteria-job-title"
-            className="text-xl font-bold tracking-tight text-[#181818]"
+            className="text-xl font-bold tracking-tight text-slate-900"
           >
             {activeTitle}
           </h1>
-          <p className="text-xs text-[#86909c] mt-1 max-w-2xl font-normal">
-            定义硬性必要条件与加分权重；HR 确认后生成不可变版本快照，后续评估严格对齐此基准。
-          </p>
         </div>
 
         <div className="flex items-center gap-3">

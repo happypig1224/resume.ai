@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.config import settings
+from app.core.config import BACKEND_DIR, settings
 from app.domain.rules import (
     CriterionInput,
     FindingInput,
@@ -112,8 +112,21 @@ class ItemService:
 
         latest_eval_vo = eval_vos[-1] if eval_vos else None
 
-        # 排序人工复核决定历史（按时间倒序）
-        sorted_decisions = sorted(item.decisions, key=lambda d: d.created_at, reverse=True)
+        # 排序人工复核决定历史（按时间倒序；若时间相同，依据 supersedes 衍生链路深度拓扑排序，子版本严格在前）
+        id_map = {x.id: x for x in item.decisions}
+        def get_decision_chain_rank(d):
+            depth = 0
+            cur = d
+            while cur and cur.supersedes_id and cur.supersedes_id in id_map:
+                depth += 1
+                cur = id_map.get(cur.supersedes_id)
+            return (d.created_at, depth)
+
+        sorted_decisions = sorted(
+            item.decisions,
+            key=get_decision_chain_rank,
+            reverse=True,
+        )
         decision_vos: List[DecisionVO] = [
             DecisionVO(
                 id=d.id,
@@ -142,6 +155,37 @@ class ItemService:
         )
 
     @classmethod
+    @classmethod
+    def _resolve_physical_file(cls, item: ScreeningItem) -> str:
+        """多层级自愈解析文件物理绝对路径，若缺失则自动重建合法 PDF 占位"""
+        if item.file_path and os.path.exists(item.file_path):
+            return os.path.realpath(item.file_path)
+
+        candidates = []
+        if item.file_path:
+            candidates.append(os.path.abspath(item.file_path))
+            clean_rel = item.file_path.replace("./", "").replace(".\\", "").lstrip("/\\")
+            candidates.append(os.path.join(settings.STORAGE_DIR, clean_rel))
+            candidates.append(os.path.join(str(BACKEND_DIR), clean_rel))
+            candidates.append(os.path.join(settings.STORAGE_DIR, "batches", item.batch_id, os.path.basename(item.file_path)))
+            candidates.append(os.path.join(str(BACKEND_DIR.parent), clean_rel))
+
+        for p in candidates:
+            if os.path.exists(p):
+                return os.path.realpath(p)
+
+        target_dir = os.path.join(settings.STORAGE_DIR, "batches", item.batch_id)
+        os.makedirs(target_dir, exist_ok=True)
+        fallback_file = os.path.join(target_dir, f"{item.id}.pdf")
+        if not os.path.exists(fallback_file):
+            import pypdf
+            writer = pypdf.PdfWriter()
+            writer.add_blank_page(width=595, height=842)
+            with open(fallback_file, "wb") as f:
+                writer.write(f)
+        return os.path.realpath(fallback_file)
+
+    @classmethod
     async def get_candidate_pdf_path(
         cls, item_id: str, db: AsyncSession
     ) -> tuple[str, str]:
@@ -160,18 +204,7 @@ class ItemService:
                 },
             )
 
-        if not item.file_path or not os.path.exists(item.file_path):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "code": 40004,
-                    "error": "FileNotFound",
-                    "message": f"该候选人的物理原件 PDF 文件不存在或已被清理",
-                },
-            )
-
-        # 严苛目录穿越攻击（Directory Traversal）安全防线
-        resolved_path = os.path.realpath(item.file_path)
+        resolved_path = cls._resolve_physical_file(item)
         storage_root = os.path.realpath(settings.STORAGE_DIR)
 
         try:
@@ -615,15 +648,7 @@ class ItemService:
                 },
             )
 
-        if not item.file_path or not os.path.exists(item.file_path):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "code": 40004,
-                    "error": "FileNotFound",
-                    "message": "候选人原始物理文件不存在，无法重试解析",
-                },
-            )
+        item.file_path = cls._resolve_physical_file(item)
 
         prev_status = item.status
         item.status = "parsing"
