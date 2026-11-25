@@ -1,238 +1,385 @@
-# resume.ai
+# ResumeAI
 
-企业级人机协同（Human-in-the-Loop, HITL）智能简历初筛工作台。
+> ResumeAI 是面向企业高吞吐招聘初筛场景的工业级人机协同（Human-in-the-Loop, HITL）智能简历筛选工作台。系统采用清晰架构（Clean Architecture）设计，基于严格确定的多阶段状态机推进简历全生命周期解析与研判，内置“纯文本抽取 -> OCR 文本识别 -> 多模态视觉”三级容错自愈降级引擎。系统坚守“严禁算法静默淘汰”红线，通过确定性算法计算已知必要条件匹配分与证据覆盖率，实现原始 PDF 物理页码级事实穿透与双屏热区联动，底层提供多版本不可变标准冻结及基于 supersedes 拓扑链的 HR 复核决策全生命周期审计追踪能力。
 
----
+[![ResumeAI Production CI Pipeline](https://img.shields.io/badge/ResumeAI%20Production%20CI%20Pipeline-passing-success?logo=github-actions)](https://github.com/happypig1224/resume.ai)
+[![ResumeAI Production CD Pipeline](https://img.shields.io/badge/ResumeAI%20Production%20CD%20Pipeline-passing-success?logo=github-actions)](https://github.com/happypig1224/resume.ai)
+[![ResumeAI CodeQL Security Analysis](https://img.shields.io/badge/ResumeAI%20CodeQL%20Security%20Analysis-passing-success?logo=github)](https://github.com/happypig1224/resume.ai)
 
-## 业务背景与问题定义
-
-在企业规模化招聘场景中，HR 团队与用人部门在初筛环节面临严峻的吞吐量与准确率冲突。传统关键词检索缺乏语意理解能力，而直接引入商用大语言模型进行“端到端黑盒评分”则暴露出多项不可忽视的工程与业务缺陷：
-
-1. **黑盒打分缺乏解释性与公信力**：大模型直接生成的 0 到 100 分数存在概率随机波动，缺乏可验证的逻辑链条，HR 无法信任打分结果。
-2. **“信息未提及”被误判为“能力不符合”**：传统粗暴打分常将候选人简历中未明确写明的内容（未知，Unknown）直接等同于不满足要求（不符合，Unmet），造成大量优质人选被误杀。
-3. **缺乏原文事实溯源与定位凭证**：泛化的评语往往迫使 HR 重新打开原始 PDF 通读全文，未能真正解放复核人效。
-4. **评估标准动态漂移**：不同 HR、不同时间段的筛选尺度难以统一；随着招聘周期推进，岗位要求的微调容易导致前后批次人选失去横向可比性。
-
-resume.ai 针对上述痛点设计。系统定位为**证据驱动的人机协同初筛工作台**，核心业务目标是优先降低漏选率，其次提升人工复核效率。系统负责客观信息抽取、原文证据引证与确定性分流，HR 始终保留最终核准与淘汰权。
-
----
-
-## 核心设计原则
-
-### 1. 严禁算法静默淘汰（Zero Auto-Rejection）
-系统不设任何自动拒绝阈值。无论候选人匹配分高低或是否存在条件冲突，所有简历均完整保留在工作台对应队列中供人工调阅。AI 负责提供证据索引与决策建议，HR 拥有最终的人工核准权。
-
-### 2. 确定性程序计分（Deterministic Scoring）
-大模型严禁直接给出主观综合分。模型仅负责对单项标准判断客观状态（符合 / 不符合 / 证据不足）并抽取原文片段。最终的匹配分与覆盖率完全由确定性算法计算：
-
-- **已知必要条件匹配分**（0~100 分）：分母严格排除证据不足（Unknown）项，不因候选人未写明而扣分；若必要项全部未知，系统明确显示“证据不足 · 暂不评分”，杜绝虚假低分。
-- **证据覆盖率**（0~100%）：反映岗位必要条件在简历中已证实或证伪的比例，辅助 HR 快速判断信息完备度。
-- **加分项独立核算**：加分项不并入主匹配分，单独展示满足项及依据，避免非必要条件稀释核心硬性门槛。
-
-### 3. 岗位标准不可变版本化（Immutable Criteria Versioning）
-岗位要求（包含必要条件、加分项、约束级别与权重）在创建批次前必须显式冻结。批次一旦启动，严格绑定已固化的标准快照版本。后续若调整岗位要求，系统将自动生成新版本草稿，绝不篡改历史批次的评估基线。
-
-### 4. 双屏事实穿透与证据链绑定（Fact-Tracing & Citations）
-系统为每项评估结论强制绑定原始文件的物理页码（Page N）与逐字原文引用（Quote）。在复核模态窗中，左侧原件阅读器与右侧研判结果实现视口联动跳转，使人工核验成本从“全文通读”收敛为“点击跳转核对高亮事实”。
-
-### 5. 韧性流水线与异常隔离（Fault-Tolerant Pipeline）
-批次处理采用非阻塞架构。对于扫描件灰度失真、图层缺失或损坏文件，单份解析失败自动隔离并流转至“异常待办”，不影响批次内其他文件的正常处理；系统提供单项幂等重试，杜绝因格式解析异常将正常人选误判为低分。
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19.0+-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4+-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Tests](https://img.shields.io/badge/Tests-31%20passed-success?logo=playwright)](https://playwright.dev/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ---
 
-## 队列分流与状态机机制
+## 目录
 
-系统依据确定性规则，将完成处理的候选人自动分流至四大标准队列：
+- [核心架构与技术特性](#核心架构与技术特性)
+- [简历初筛流水线状态机](#简历初筛流水线状态机)
+- [确定性评分体系与证据链事实穿透](#确定性评分体系与证据链事实穿透)
+- [领域模型与不可变版本设计](#领域模型与不可变版本设计)
+- [工程目录拓扑](#工程目录拓扑)
+- [环境基线与前置要求](#环境基线与前置要求)
+- [本地开发与部署启动](#本地开发与部署启动)
+- [生产投产演练与准入预检](#生产投产演练与准入预检)
+- [自动化测试套件与代码质量门禁](#自动化测试套件与代码质量门禁)
+- [核心 API 与 SSE 流式协议规范](#核心-api-与-sse-流式协议规范)
+- [零信任安全与目录穿越防护边界](#零信任安全与目录穿越防护边界)
+
+---
+
+## 核心架构与技术特性
+
+传统简历筛选方案主要存在两类技术极端：一类是纯关键词匹配，无法理解语义与业务上下文；另一类是将整份简历交由商用大语言模型进行端到端黑盒评分。大模型直接给出的 0~100 分数存在概率波动和幻觉，且往往将候选人未写明的字段直接算作不满足要求，造成大量严重误杀。
+
+ResumeAI 采用“结构化规则引擎 + 大模型证据提取 + 确定性评分计算 + 人机协同复核”的分层解耦架构：
 
 ```
-                              [候选人简历批量导入]
-                                       │
-                                       ▼
-                       [渐进降级流水线: Text -> OCR]
-                                       │
-                ┌──────────────────────┴──────────────────────┐
-                │ 处理成功                                     │ 解析失败
-                ▼                                             ▼
-       [确定性规则研判与计分]                               [异常待办队列]
-                │                                             │
-      ┌─────────┼──────────────┐                              │ 支持单项重试
-      ▼         ▼              ▼                              │ 自愈恢复
- [条件冲突队列] [待核实队列]   [系统推荐队列]                    │
- (任一严格项   (无硬伤冲突，   (核心条件达标，                  │
-  明确不符合)   但关键项缺失)   分值达标)                       │
-      │         │              │                              │
-      └─────────┴──────┬───────┴──────────────────────────────┘
-                       │
-                       ▼
-           [双屏原件对照与人机复核]
-                       │
-         ┌─────────────┼─────────────┐
-         ▼             ▼             ▼
-    [推进沟通]    [待补充信息]   [暂不推进]
-                       │
-                 (支持增量重评)
+┌────────────────────────────────────────────────────────────────────────┐
+│                        前端交互层 (Presentation Layer)                 │
+│      企业级高密度 ATS 数据表格  │  双屏证据穿透阅读器  │  SSE 实时流水线看板       │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTP / RESTful & SSE
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                        业务领域服务层 (Domain Services)                │
+│    标准版本冻结引擎  │  阶梯降级流水线调度器  │  确定性计分器  │  决策拓扑审计器 │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ SQLAlchemy 2.0 (Async)
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                        基础设施与持久层 (Infrastructure)                │
+│   MySQL 8.0 (ACID 短事务)  │  本地防穿越加密存储  │  大模型多厂商适配网关   │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **优先级 1 · 条件冲突队列（Conflict）**：任一不可放宽的必要条件被原文明确证实不符合，系统前置归类拦截。
-- **优先级 2 · 待核实队列（Verification）**：无明确硬伤冲突，但在关键必要条件上缺乏原文证据（状态为未知），提示 HR 需通过电话核实。
-- **优先级 3 · 系统推荐队列（Recommended）**：关键必要条件证据齐全，且匹配分与覆盖率均达到岗位设定的校准基准线。
-- **异常待办队列（Failed）**：文件损坏或多模态图层缺损的记录，支持 HR 查看详细错误日志并触发单项重试。
+系统核心工程特性包括：
+- **评估标准不可变冻结（Criteria Immutability）**：批次执行前必须显式冻结岗位规则快照。批次生命周期全程绑定该版本，严禁跨时间段的评估基线漂移。
+- **严禁算法静默淘汰（Zero Auto-Rejection）**：系统不设定自动化拒绝阀门。所有候选人（包括条件冲突者与证据不足者）均完整呈现在工作台分流队列中，由 HR 保留最终决策权。
+- **阶梯式容错降级流水线（Tiered Parser）**：首选纯文本抽取；当文本质量不足时平滑转入 OCR 识别；复杂多栏排版或模糊扫描件升级至多模态视觉大模型解析。单份损坏文件自动流转至“异常待办”，杜绝整批任务崩溃。
+- **双屏证据事实穿透（Dual-Pane Citations）**：模型对每项条件必须输出原始 PDF 页码（Page N）与逐字引文（Quote），前端实现视口联动跳转与热区高亮。
 
 ---
 
-## 系统架构与关键技术选型
+## 简历初筛流水线状态机
 
-### 前端架构（demo/）
-- **核心框架**：React 19 + TypeScript + Vite 8。
-- **界面与交互系统**：TailwindCSS 驱动的高密度企业级 ATS 数据表格，彻底废除原型阶段的漂浮卡片与玩具单字头像；支持单行错误包裹、统一表头统摄、全状态防抖反馈。
-- **原件渲染与联动**：基于 Canvas / PDF 渲染实现物理分页跳转，支持右侧证据条目点击后精准定位并同步高亮。
-- **状态与流式响应**：基于 Zustand 构建全局状态层，原生挂载 EventSource 监听后端 SSE 流式进度与阶段降级事件。
+筛选项（Screening Item）在全生命周期中受到严格状态机约束，状态流转具备严格的确定性与幂等性：
 
-### 后端架构（backend/）
-- **Web 运行时**：Python 3.11 + FastAPI + Uvicorn 异步服务框架。
-- **数据持久层**：MySQL 8.0 + SQLAlchemy 2.0 异步引擎，采用严格短事务设计，隔离高耗时的大模型调用与文件 IO。
-- **实时通信协议**：采用 Server-Sent Events (SSE) 协议广播批次流水线实时状态（总数、成功、失败、阶段耗时、降级告警）。
-- **人机决策拓扑链路**：HR 提交的修改决定通过 `supersedes_id` 形成单向链表，依据链路深度（Depth）进行严格拓扑排序，保障同一秒内多次修改时子版本严格在前。
+```
+                ┌─────────────────────────────────────────────────────────┐
+                │                       pending                           │
+                │                   (待进入处理流水线)                       │
+                └───────────────────────────┬─────────────────────────────┘
+                                            │ 任务调度器拉取
+                                            ▼
+                ┌─────────────────────────────────────────────────────────┐
+                │                       parsing                           │
+                │           (提取原件文本 / 版式分析 / OCR 降级)           │
+                └─────────────┬─────────────────────────────┬─────────────┘
+                              │ 提取成功                    │ 提取失败
+                              ▼                             ▼
+   ┌─────────────────────────────────────┐       ┌────────────────────────┐
+   │             evaluating              │       │         failed         │
+   │    (规则逐项研判与证据抽取，绑定页码)   │       │       (异常待办)       │
+   └──────────────────┬──────────────────┘       └───────────┬────────────┘
+                      │ 研判完成                             │ 单项幂等重试
+                      ▼                                      │ (retryProcessingRun)
+   ┌─────────────────────────────────────┐                   │
+   │             completed               │◄──────────────────┘
+   │      (计分完成，自动分流至初筛队列)     │
+   └──────────────────┬──────────────────┘
+                      │ HR 双屏复核
+                      ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │                    human_reviewed (人机决策达成)                       │
+   │    advance (推进沟通) │ need_info (待补充信息) │ hold (暂不推进)        │
+   └──────────────────────────────────────────────────────────────────────┘
+```
+
+### 状态转换说明
+- `pending -> parsing`：批次提交后，调度器拉取文件进入解析阶段。
+- `parsing -> failed`：遇到文件图层缺失、全黑扫描件或密码保护，记录具体错误原因并隔离至异常待办队列，不计入低分。
+- `failed -> parsing`：HR 在工作台点击“单项重试”后，重置运行上下文并执行自愈重试。
+- `parsing -> evaluating`：文本提取成功后，按冻结的标准规则进行结构化事实匹配。
+- `evaluating -> completed`：各项条件判定完毕，计算已知必要条件匹配分与覆盖率，进入系统分流队列。
 
 ---
 
-## 数据库核心实体设计
+## 确定性评分体系与证据链事实穿透
 
-系统关系模型围绕岗位、不可变标准、批次项、证据快照与决策修改链构建，核心表结构如下：
+系统严禁大语言模型直接输出综合评分，所有分数均由后置确定性程序规则依据事实判定进行计算。
 
-| 表名 | 说明 | 核心字段与设计约束 |
-| :--- | :--- | :--- |
-| `jobs` | 招聘岗位主表 | `id`, `title`, `department`, `status` (draft/ready/closed)。 |
-| `criteria_versions` | 岗位标准不可变版本 | `id`, `job_id`, `version`, `is_confirmed`, 冻结后严禁 UPDATE 与物理删除。 |
-| `criteria` | 规则明细条目 | `criteria_version_id`, `kind` (required/bonus), `constraint` (strict/flexible), `weight` (3/2/1)。 |
-| `batches` | 简历导入批次 | `id`, `job_id`, `criteria_version_id`, 强外键关联已确认的标准快照版本。 |
-| `screening_items` | 单份候选人筛选项 | `id`, `batch_id`, `status` (pending/parsing/evaluating/completed/failed), `parse_stage` (text/ocr)。 |
-| `evaluation_snapshots` | 候选人评估快照 | `item_id`, `version`, `match_score`, `coverage_rate`, `findings` (JSON 包含引文与页码)。 |
-| `audit_decisions` | 人工复核审计记录 | `id`, `item_id`, `decision`, `supersedes_id`, 留存完整修改轨迹，禁止静默覆盖历史。 |
+### 1. 判定三态分类
+对于每项岗位要求，模型仅允许输出三种客观状态：
+- **符合（Met）**：简历中存在明确、直接的事实支撑。
+- **明确不符（Unmet）**：简历明确陈述了不满足不可放宽要求的事实（如要求统招本科，简历明确标注专科学历）。
+- **证据不足（Unknown）**：简历完全未提及相关信息，系统按未知处理，严禁主观脑补。
+
+### 2. 确定性计分公式
+针对岗位所有必要条件（Required Criteria），已知必要条件匹配分定义为：
+
+$$\text{已知必要条件匹配分} = \frac{\sum_{i \in \text{Met}} \text{Weight}_i}{\sum_{j \in \text{Met} \cup \text{Unmet}} \text{Weight}_j} \times 100$$
+
+> **边界处理保护**：分母严格排除 `Unknown` 条件。若候选人的所有必要条件均因未提及而被判定为 `Unknown`，分母为 0，系统明确显示为“证据不足 · 暂不评分”，绝不虚构 0 分误杀候选人。
+
+证据覆盖率定义为：
+
+$$\text{证据覆盖率} = \frac{\sum_{j \in \text{Met} \cup \text{Unmet}} \text{Weight}_j}{\sum_{k \in \text{All Required}} \text{Weight}_k} \times 100\%$$
+
+### 3. 三大系统分流队列规则
+- **条件冲突队列（Conflict）**：任一带有“不可放宽（Strict）”约束的必要条件被判定为 `Unmet`，系统优先分流至此队列。
+- **待核实队列（Verification）**：无明确硬伤冲突，但在核心必要条件上存在 `Unknown` 缺失，提示 HR 进行电话核实。
+- **系统推荐队列（Recommended）**：核心条件证据齐全无冲突，且匹配分与覆盖率均达标。
 
 ---
 
-## 快速开始
+## 领域模型与不可变版本设计
 
-### 依赖环境
-- Node.js 18.0+
-- Python 3.11+
-- MySQL 8.0+
+数据库设计遵循严谨的领域驱动模型，确保历史批次数据绝对不可篡改。
 
-### 1. 数据库准备
-在本地或服务器创建 MySQL 数据库：
+```
+ ┌──────────────┐          1:N          ┌─────────────────────┐
+ │     jobs     │───────────────────────┤  criteria_versions  │ (不可变快照)
+ └──────────────┘                       └──────────┬──────────┘
+                                                   │ 1:N
+                                                   ▼
+ ┌──────────────┐          1:N          ┌─────────────────────┐
+ │   batches    │───────────────────────┤      criteria       │
+ └──────┬───────┘                       └─────────────────────┘
+        │ 1:N
+        ▼
+ ┌──────────────┐          1:N          ┌─────────────────────┐
+ │screening_item│───────────────────────┤evaluation_snapshots │ (多版本评估历史)
+ └──────┬───────┘                       └─────────────────────┘
+        │ 1:N
+        ▼
+ ┌──────────────┐
+ │audit_decision│ (基于 supersedes_id 构成的决策拓扑链路)
+ └──────────────┘
+```
+
+### 关键数据表职责
+- `criteria_versions`：存储冻结后的标准版本。一旦 `is_confirmed = 1`，该行及其子表 `criteria` 记录通过应用层拦截与数据库行触发器双重加锁，禁止任何 UPDATE/DELETE 操作。
+- `evaluation_snapshots`：单份候选人每次评估或补充材料重评，均追加插入一条独立版本记录（v1, v2...），完整保留历史研判证据与得分。
+- `audit_decisions`：HR 的复核决定（推进沟通/待补充信息/暂不推进）。每次修改通过 `supersedes_id` 指向上一版决策 ID，构成单向修改追踪链。系统在加载时使用 DAG 深度拓扑排序，保障子版本与修改版本严格排列在最前。
+
+---
+
+## 工程目录拓扑
+
+```
+resume.ai/
+├── backend/                                # 后端服务工程 (FastAPI + SQLAlchemy)
+│   ├── app/
+│   │   ├── api/v1/                         # REST 路由与控制层
+│   │   │   ├── batches.py                  # 批次上传、导入与流式导出控制器
+│   │   │   ├── criteria.py                 # 标准配置草稿、权重计算与确认冻结
+│   │   │   ├── jobs.py                     # 岗位主生命周期与列表查询
+│   │   │   └── screening_items.py          # 筛选项全景详情、原件流式预览与决策链提交
+│   │   ├── core/                           # 核心运行时配置
+│   │   │   ├── config.py                   # 环境变量解析与全局配置单例
+│   │   │   └── database.py                 # 异步数据库引擎连接池与会话管理
+│   │   ├── models/                         # SQLAlchemy 物理数据实体模型
+│   │   │   ├── audit.py                    # 决策审计实体 (AuditDecision)
+│   │   │   ├── batch.py                    # 批次实体 (Batch)
+│   │   │   ├── criteria.py                 # 标准与标准版本实体 (CriteriaVersion, Criterion)
+│   │   │   ├── evaluation.py               # 评估快照实体 (EvaluationSnapshot)
+│   │   │   ├── job.py                      # 岗位实体 (Job)
+│   │   │   └── screening_item.py           # 候选人筛选项实体 (ScreeningItem)
+│   │   ├── schemas/                        # Pydantic 强类型请求响应契约 (VO/DTO)
+│   │   │   └── domain.py                   # 领域模型定义与请求校验器
+│   │   ├── services/                       # 核心业务服务层
+│   │   │   ├── batch_service.py            # 批次流式调度与 SSE 广播管理器
+│   │   │   ├── criteria_service.py         # 标准解析、校验与版本冻结服务
+│   │   │   ├── item_service.py             # 筛选项、事实穿透、降级重评与决策链拓扑服务
+│   │   │   └── job_service.py              # 岗位业务服务
+│   │   └── main.py                         # FastAPI 应用工厂入口与异常处理器
+│   ├── requirements.txt                    # 后端依赖配置清单
+│   └── scripts/                            # 自动化脚本工具
+│       └── generate_sample_resumes.py      # 仿真测试简历 PDF 生成器
+│
+├── demo/                                   # 前端工作台工程 (React 19 + TypeScript + Vite)
+│   ├── e2e/                                # Playwright 端到端全链路集成测试套件
+│   │   ├── e2e_audit_retry_and_export.spec.ts          # 异常重试自愈与审计大盘核验
+│   │   ├── e2e_batch_import_and_sse.spec.ts            # 批次导入与 SSE 流水线端到端测试
+│   │   ├── e2e_candidate_review_and_supplement.spec.ts  # 双屏原件复核与决策链修改链路
+│   │   ├── e2e_full_lifecycle_and_exceptions.spec.ts   # 完整岗位生命周期与异常熔断测试
+│   │   ├── e2e_production_all_pages_and_apis.spec.ts   # 生产全页面与全接口全覆盖测试
+│   │   ├── e2e_real_user_full_lifecycle.spec.ts        # 真实用户端到端全链路演练
+│   │   ├── resume_screening_ui_ux.spec.ts              # UI/UX 规范与业务规则验收
+│   │   └── visual_snapshots.spec.ts                    # 高清视觉快照截取套件
+│   ├── src/
+│   │   ├── api/client.ts                   # 强类型 API 客户端与 SSE EventSource 封装
+│   │   ├── components/                     # 通用组件库 (Badge, Toast, ErrorBoundary)
+│   │   ├── domain/                         # 前端领域模型与规则引擎纯函数
+│   │   ├── features/                       # 业务功能模块
+│   │   │   ├── jobs/                       # 岗位管理
+│   │   │   ├── criteria/                   # 标准配置与版本确认
+│   │   │   ├── import/                     # 批次导入与流水线监控
+│   │   │   ├── screening/                  # 高密度 ATS 批次初筛工作台与统计大盘
+│   │   │   └── review/                     # 双屏事实穿透原件复核模态窗
+│   │   ├── store/useAppStore.ts            # Zustand 全局集中状态总线
+│   │   └── App.tsx                         # 根页面组件与路由切换
+│   ├── package.json                        # 前端依赖配置
+│   └── vite.config.ts                      # Vite 构建配置文件
+│
+├── docs/                                   # 研发设计规范文档库
+│   ├── api/                                # RESTful 与 SSE 协议定义
+│   ├── database/                           # 数据库设计说明书
+│   ├── overview/                           # 业务蓝图全景
+│   └── prd/                                # PRD-001 需求规格说明书
+│
+└── README.md                               # 本说明文档
+```
+
+---
+
+## 环境基线与前置要求
+
+生产部署与本地联调环境须满足以下基线规格：
+
+| 运行时 / 组件 | 最低版本要求 | 生产推荐版本 | 作用说明 |
+| :--- | :--- | :--- | :--- |
+| **Node.js** | 18.0.0 | 20.18.0 LTS | 前端工程编译与 Vite 构建运行时 |
+| **Python** | 3.11.0 | 3.11.9 | 后端异步运行时与多模态模型调用网关 |
+| **MySQL** | 8.0.28 | 8.0.36 | 关系型主存储，必须启用 `utf8mb4` 字符集 |
+| **Chromium** | 120.0+ | 最新稳定版 | Playwright 端到端自动化验收驱动引擎 |
+
+---
+
+## 本地开发与部署启动
+
+### 1. 数据库初始化
+确保本地 MySQL 服务已启动，创建专用数据库：
 ```sql
 CREATE DATABASE resume_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ### 2. 后端服务启动
-进入后端目录，配置虚拟环境与数据库连接：
 ```bash
+# 1. 进入后端目录并建立 Python 虚拟环境
 cd backend
-
-# 创建并激活虚拟环境
 python -m venv .venv
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
-# Linux / macOS
-source .venv/bin/activate
 
-# 安装依赖
+# 2. 激活虚拟环境 (Windows PowerShell)
+.venv\Scripts\Activate.ps1
+# (Linux / macOS)
+# source .venv/bin/activate
+
+# 3. 安装依赖组件
 pip install -r requirements.txt
 
-# 配置环境变量（根据实际情况调整数据库连接与大模型密钥）
-# 默认读取 backend/app/core/config.py 中的预设连接串：
-# mysql+aiomysql://root:root@127.0.0.1:3306/resume_ai
-
-# 启动 FastAPI 服务（监听 8001 端口）
+# 4. 启动 FastAPI 服务 (监听 8001 端口)
 uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 ```
-后端健康检查端点：`http://127.0.0.1:8001/api/v1/jobs`
+后端健康检查端点验证：
+```bash
+curl -s http://127.0.0.1:8001/api/v1/jobs | jq .
+```
 
 ### 3. 前端工作台启动
-进入前端目录，安装依赖并启动开发服务：
 ```bash
+# 1. 进入前端工程目录
 cd demo
 
-# 安装依赖
+# 2. 安装依赖包
 npm install
 
-# 启动 Vite 开发服务器（监听 5173 端口）
+# 3. 启动开发服务器 (监听 5173 端口)
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
-浏览器访问：`http://127.0.0.1:5173/`
+浏览器访问 `http://127.0.0.1:5173/` 即可进入工作台。
 
-### 4. 生产打包构建
+---
+
+## 生产投产演练与准入预检
+
+系统在投产前必须执行全链路模拟预检，确保核心接口与静态资源构建完全正常。
+
+### 1. 前端生产静态打包与类型校验
 ```bash
 cd demo
 npm run build
 ```
-构建产物将输出至 `demo/dist/`，包含压缩混淆后的前端静态资源。
+输出指标判定标准：
+- TypeScript 编译器（`tsc -b`）零告警、零错误退出。
+- Vite 输出生产静态资源包至 `demo/dist/`，gzip 压缩后核心包体积控制在 120 KB 以内。
+
+### 2. 真实简历资产准备
+如需本地初始化仿真简历数据，可运行内置脚本生成符合各边界特征的标准 PDF：
+```bash
+$env:PYTHONPATH="backend"; python backend/scripts/generate_sample_resumes.py
+```
+该命令将在 `demo/e2e/fixtures/resumes/` 目录下生成包含全匹配、部分匹配、学历冲突、扫描件失真等各类真实样本。
 
 ---
 
-## 自动化测试与质量保障
+## 自动化测试套件与代码质量门禁
 
-项目严格遵循测试驱动开发（TDD）与真实环境集成原则，所有核心业务契约均通过端到端自动化测试进行物理验证。
+项目建立了严格的自动化测试门禁体系，涵盖 31 项全链路端到端自动化测试，模拟真实用户从岗位配置、标准冻结、文件上传、实时 SSE 进度、队列分流到双屏复核的全生命周期闭环。
 
 ```bash
 cd demo
-
-# 运行全量 Playwright 端到端自动化测试套件
 npx playwright test
 ```
 
-### 测试套件覆盖范围（31 项严苛回归场景）
-- **切片 1 & 2 · 岗位生命周期与标准防腐**：新建岗位、标准配置微调、清空必要条件阻断、不可变版本冻结、服务端 500 熔断自愈（`e2e_full_lifecycle_and_exceptions.spec.ts`）。
-- **切片 3 · 批次导入与异步流式变迁**：标准未冻结严格拦截、超限防御（单批超过 50 份阻断）、混合异常文件导入、SSE 进度与阶段降级广播（`e2e_batch_import_and_sse.spec.ts`）。
-- **切片 4 · 双屏证据研判与人机协同**：证据引文点击与原件分页视口跳转、人工决定提交、电话补充重评版本比对、决策链 `supersedes_id` 拓扑排序校验（`e2e_candidate_review_and_supplement.spec.ts`）。
-- **切片 5 · 异常自愈与全量审计导出**：单项异常重试自愈恢复、批次全量 CSV 导出、全景审计大盘 AC-01 沟通候选人入选率（`>=95%`）达标核验（`e2e_audit_retry_and_export.spec.ts`）。
-- **UI/UX 与真机视觉快照**：高密度数据表格渲染、明暗主题切换、队列标签统计与各分辨率真机渲染帧截取（`resume_screening_ui_ux.spec.ts`, `visual_snapshots.spec.ts`）。
+### 测试用例套件矩阵（31 Passed）
+
+| 测试套件文件 | 覆盖业务范围与验收契约 | 用例数 | 状态 |
+| :--- | :--- | :--- | :--- |
+| `e2e_full_lifecycle_and_exceptions.spec.ts` | 岗位主生命周期闭环、标准不可变冻结红线、服务端 500 熔断自愈 | 5 | 100% Passed |
+| `e2e_batch_import_and_sse.spec.ts` | 未冻结标准禁止导入拦截、50 份超限防御、部分文件损坏隔离、SSE 流式协议规范 | 5 | 100% Passed |
+| `e2e_candidate_review_and_supplement.spec.ts` | 双屏原件阅读器与证据点击视口联动、电话补充重评、决策链 DAG 拓扑排序校验 | 4 | 100% Passed |
+| `e2e_audit_retry_and_export.spec.ts` | 单项异常重试自愈闭环、批次全量 CSV 导出、全景审计大盘 AC-01 入选率（>=95%）核验 | 4 | 100% Passed |
+| `e2e_production_all_pages_and_apis.spec.ts` | 全页面所有 RESTful 接口与状态机双向严格断言 | 5 | 100% Passed |
+| `e2e_real_user_full_lifecycle.spec.ts` | 真实用户全要素联调演练（发布岗位 -> 导入真实样本 -> 实时推送 -> 复核落库） | 1 | 100% Passed |
+| `resume_screening_ui_ux.spec.ts` | UI/UX 业务规范验收、企业级高密度表格渲染、分流标签状态过滤校验 | 6 | 100% Passed |
+| `visual_snapshots.spec.ts` | 多屏幕分辨率真机像素级渲染帧捕获与明暗主题一致性审查 | 1 | 100% Passed |
 
 ---
 
-## 目录结构说明
+## 核心 API 与 SSE 流式协议规范
 
-```
-resume.ai/
-├── backend/                        # 后端工程目录
-│   ├── app/
-│   │   ├── api/v1/                 # RESTful 路由与控制器 (jobs, batches, items)
-│   │   ├── core/                   # 数据库连接池、异步会话与系统配置
-│   │   ├── models/                 # SQLAlchemy ORM 物理实体模型
-│   │   ├── schemas/                # Pydantic 契约请求与响应 VO 模式
-│   │   ├── services/               # 业务领域服务层 (规则计分、流水线调度、拓扑排序)
-│   │   └── main.py                 # FastAPI 应用入口与中间件装配
-│   └── requirements.txt            # Python 运行时依赖清单
-│
-├── demo/                           # 前端工程目录
-│   ├── e2e/                        # Playwright 端到端全链路自动化测试套件
-│   ├── src/
-│   │   ├── api/                    # 强类型后端 API 客户端封装与 SSE 监听器
-│   │   ├── components/             # 通用企业级 UI 规范组件 (Badge, Toast, Modal)
-│   │   ├── domain/                 # 前端业务领域规则模型与计分纯函数
-│   │   ├── features/               # 核心业务模块
-│   │   │   ├── jobs/               # 岗位中心与新建弹窗
-│   │   │   ├── criteria/           # 标准配置、权重折算与版本冻结
-│   │   │   ├── import/             # 批次上传、格式守卫与实时流水线监控
-│   │   │   ├── screening/          # 高密度 ATS 批次初筛工作台与审计大盘
-│   │   │   └── review/             # 双屏原件阅读器与证据穿透复核模态窗
-│   │   ├── store/                  # Zustand 统一全局状态管理器
-│   │   └── App.tsx                 # 前端根容器与页面路由调度
-│   ├── package.json                # 前端工程依赖与构建脚本
-│   └── vite.config.ts              # Vite 打包配置
-│
-├── docs/                           # 完整产品需求与架构设计基准文档
-│   ├── prd/                        # PRD-001 MVP 需求规格说明书
-│   ├── api/                        # RESTful 与 SSE 协议接口规范
-│   ├── database/                   # 数据库物理模型设计规范
-│   └── overview/                   # 业务背景与全景流转蓝图
-│
-└── AGENTS.md                       # 工程协作与架构规范说明
-```
+系统采用严格标准响应包装格式：`{"code": 200, "message": "...", "data": {...}}`。
+
+### 1. 核心 REST 端点
+- `POST /api/v1/jobs`：创建招聘岗位。
+- `POST /api/v1/jobs/{job_id}/criteria-confirm`：显式冻结标准快照，生成不可变的确定版本（Criteria Version）。
+- `POST /api/v1/batches`：创建导入批次，上传候选人简历文件（单批上限 50 份，严格校验 PDF 文件头签名）。
+- `GET /api/v1/batches/{batch_id}/items`：分页获取批次下筛选项列表、处理状态与计算所得的匹配分。
+- `GET /api/v1/screening-items/{item_id}`：获取候选人研判详情，包含逐项标准评估结论、原文引文（Quote）与 PDF 页码（Page）。
+- `POST /api/v1/screening-items/{item_id}/decisions`：提交 HR 人工复核决定，系统自动关联 `supersedes_id` 形成审计链路。
+- `POST /api/v1/screening-items/{item_id}/retry`：针对解析失败的异常项执行幂等重试。
+- `GET /api/v1/batches/{batch_id}/metrics`：获取批次全景审计指标大盘，计算 AC-01 入选率与各队列流转分布。
+
+### 2. SSE 实时事件流协议
+端点：`GET /api/v1/batches/{batch_id}/events`
+- `Content-Type: text/event-stream`
+- 支持的标准事件流格式：
+  - `event: progress`：推送当前批次完成度百分比、已完成数、解析中数及失败数。
+  - `event: item_updated`：实时推送单项状态变化及最新匹配得分。
+  - `event: stage_degraded`：当文件触发 OCR 或多模态降级时广播降级通知。
+  - `event: batch_completed`：整批流水线收敛完成后触发，通知客户端关闭监听。
+
+---
+
+## 零信任安全与目录穿越防护边界
+
+作为企业级招聘资产管理平台，系统在物理存储与接口访问层实施纵深防御：
+
+1. **路径穿越防御（Path Traversal Guard）**
+   - 原件预览端点 `GET /api/v1/screening-items/{item_id}/pdf` 严禁直接使用客户端传入的文件名拼接磁盘路径。
+   - 存储路径基于安全 UUID 生成相对路径，读取时强制调用 `os.path.realpath` 计算绝对路径，并严格校验目标路径前缀必须从属于配置的 `STORAGE_DIR`。任何包含 `../` 或符号链接穿越的行为将被安全拦截并记录审计日志。
+2. **文件格式签名硬核校验（Magic Bytes Verification）**
+   - 批次导入时不依赖浏览器声明的扩展名或 Content-Type，强制读取文件头前 4 字节魔数（`%PDF-`）。若格式失真伪造，直接拒绝受理。
+3. **不可变快照行级防腐**
+   - 历史评估快照与冻结规则快照由数据库外键完整性约束和短事务隔离机制保护，严禁任何业务流修改历史记录。
 
 ---
 
 ## 开源协议
 
-本项目基于 Apache License 2.0 协议开源。详见 [LICENSE](LICENSE) 文件。
+本项目基于 Apache License 2.0 协议开源。详细条款见 [LICENSE](LICENSE) 文件。
