@@ -15,6 +15,13 @@
 [![Tests](https://img.shields.io/badge/Tests-31%20passed-success?logo=playwright)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+<br />
+
+<div align="center">
+  <img src="docs/assets/workbench_preview.png" alt="ResumeAI 企业级高密度初筛工作台真机渲染界面" width="100%" />
+  <p><em>图 1：ResumeAI 企业级高密度初筛工作台（去除 AI 样板卡片，采用统一 thead 表头统摄与规整单行错误展示）</em></p>
+</div>
+
 ---
 
 ## 目录
@@ -25,11 +32,13 @@
 - [领域模型与不可变版本设计](#领域模型与不可变版本设计)
 - [工程目录拓扑](#工程目录拓扑)
 - [环境基线与前置要求](#环境基线与前置要求)
+- [配置与环境变量](#配置与环境变量)
 - [本地开发与部署启动](#本地开发与部署启动)
 - [生产投产演练与准入预检](#生产投产演练与准入预检)
 - [自动化测试套件与代码质量门禁](#自动化测试套件与代码质量门禁)
 - [核心 API 与 SSE 流式协议规范](#核心-api-与-sse-流式协议规范)
 - [零信任安全与目录穿越防护边界](#零信任安全与目录穿越防护边界)
+- [技术支持与开源协议](#技术支持与开源协议)
 
 ---
 
@@ -227,11 +236,13 @@ resume.ai/
 │   └── vite.config.ts                      # Vite 构建配置文件
 │
 ├── docs/                                   # 研发设计规范文档库
+│   ├── assets/                             # 架构示意图与真机全景截图
 │   ├── api/                                # RESTful 与 SSE 协议定义
 │   ├── database/                           # 数据库设计说明书
 │   ├── overview/                           # 业务蓝图全景
 │   └── prd/                                # PRD-001 需求规格说明书
 │
+├── .env.example                            # 生产环境变量配置模版
 └── README.md                               # 本说明文档
 ```
 
@@ -247,6 +258,27 @@ resume.ai/
 | **Python** | 3.11.0 | 3.11.9 | 后端异步运行时与多模态模型调用网关 |
 | **MySQL** | 8.0.28 | 8.0.36 | 关系型主存储，必须启用 `utf8mb4` 字符集 |
 | **Chromium** | 120.0+ | 最新稳定版 | Playwright 端到端自动化验收驱动引擎 |
+
+---
+
+## 配置与环境变量
+
+系统配置严格通过环境变量解耦，支持生产机密与配置隔离。模版文件参见根目录下 [.env.example](.env.example)。
+
+| 环境变量名 | 说明 | 默认值 / 示例 | 是否必填 |
+| :--- | :--- | :--- | :--- |
+| `APP_ENV` | 运行环境模式 (`development` / `production`) | `development` | 否 |
+| `PORT` | 后端服务监听端口 | `8001` | 否 |
+| `DATABASE_URL` | MySQL 异步连接串 | `mysql+aiomysql://root:root@127.0.0.1:3306/resume_ai?charset=utf8mb4` | **是** |
+| `LLM_PROVIDER` | 主大语言模型供应商类别 | `deepseek` | 否 |
+| `LLM_API_KEY` | 主大语言模型调用密钥 | `sk-************************` | **是** |
+| `LLM_BASE_URL` | 主大语言模型 API 入口地址 | `https://api.deepseek.com` | 否 |
+| `LLM_MODEL` | 主语言模型名称 | `deepseek-chat` | 否 |
+| `SECONDARY_LLM_API_KEY` | 备用多模态/大模型网关密钥 (如 302.ai) | `sk-************************` | 否 |
+| `SECONDARY_LLM_BASE_URL` | 备用网关 API 入口地址 | `https://api.302.ai/v1` | 否 |
+| `SECONDARY_LLM_MODEL` | 备用模型名称 | `gpt-4o-mini` | 否 |
+| `STORAGE_DIR` | 简历原件安全存储目录 | `storage` | 否 |
+| `CORS_ORIGINS` | 允许跨域的客户端来源数组 (JSON 格式) | `["http://localhost:5173", "http://127.0.0.1:5173"]` | 否 |
 
 ---
 
@@ -272,7 +304,11 @@ python -m venv .venv
 # 3. 安装依赖组件
 pip install -r requirements.txt
 
-# 4. 启动 FastAPI 服务 (监听 8001 端口)
+# 4. 配置环境变量
+cp ../.env.example .env
+# 按实际环境编辑 .env 中的 DATABASE_URL 与 LLM_API_KEY
+
+# 5. 启动 FastAPI 服务 (监听 8001 端口)
 uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 ```
 后端健康检查端点验证：
@@ -380,6 +416,11 @@ npx playwright test
 
 ---
 
-## 开源协议
+## 技术支持与开源协议
 
+### 问题反馈与安全响应
+- **问题与建议（Issues）**：如遇到功能缺陷或使用疑问，请在 GitHub Issues 提交报告，附带完整错误日志与复现步骤。
+- **安全漏洞通报**：若发现涉及安全边界或路径穿越等高危隐患，请勿公开发布 Issue，请通过仓库安全私信进行负责任的安全披露。
+
+### 开源协议
 本项目基于 Apache License 2.0 协议开源。详细条款见 [LICENSE](LICENSE) 文件。
